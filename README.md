@@ -11,7 +11,7 @@ $ git clone https://github.com/gersteinlab/rpgQTL.git
 $ cd rpgQTL
 $ pip install -r install/requirements.txt .
 ```
-A detailed tutorial of setting up the environment from scratch could be found [here](https://github.com/gersteinlab/rpgQTL/blob/main/install/README.md). This is based on Yale HPC system but should be applicable to linux systems with nvidia GPUs.
+A detailed tutorial of setting up the environment from scratch could be found [here](https://github.com/GenEvoBioinfLab/rpgQTL/blob/main/install/README.md).
 
 ### Requirement
 ```
@@ -25,18 +25,14 @@ Notice that tensorqtl depends on pandas-plink, pytorch and other packages. For f
 See `example.ipynb` for the example script. The following is based on the example but applied to the general usage of the rpgQTL package.
 
 ### Input files
-`plink_prefix_path`: Genotype VCF in PLINK format  
-`phenotype_df, phenotype_pos_df`: expression file  
-`covariates_df`: covariates (e.g. PEER factor, sex, etc.)  
-For details about the above files, see instruction in [tensorqtl](https://github.com/broadinstitute/tensorqtl)  
-
-`rpg_df`: `pandas.DataFrame` or `str`  
-- If `pandas.DataFrame`, this would be one large dataframe. Each row correspond to one candidate genomic region for eqtl detection of one gene. Each gene could contain multiple regions (rows). The required first four columns should be:  
-  - col1: chromosome  
-  - col2: start of the region  
-  - col3: ends of the region  
-  - col4: gene name  
-- If `str`, this would be the path to a directory. For each file in the directory, the file name is a gene name and the file contains the regions for only that gene. The format of each file is the same as the above pandas.DataFrame.
+1. `plink_prefix_path`: Genotype VCF in PLINK format  
+2. `phenotype_df, phenotype_pos_df`: expression file  
+3. `covariates_df`: covariates (e.g. PEER factor, sex, etc.)  
+For expression and covatiates, you can download from GTEx v8 data from the GTEx portal. For genotype, see instructions in GTEx to access the controlled data.
+Also see instruction in [tensorqtl](https://github.com/broadinstitute/tensorqtl).  
+4. `rpg_df`: `pandas.DataFrame` or `str`  
+If `pandas.DataFrame`, this would be one large dataframe. Each row correspond to one candidate genomic region for eqtl detection of one gene. Each gene could contain multiple regions (rows). The required first four columns should be: chromosome, start of the region, ends of the region, and gene name  
+If `str`, this would be the path to a directory. For each file in the directory, the file name is a gene name and the file contains the regions for only that gene. The format of each file is the same as the above pandas.DataFrame.
 
 ### rpgQTL functions
 `rpgQTL.run_nominal`: similar to `tensorqtl.cis.map_nominal`. Conduct the nominal run to get nominal p-values.
