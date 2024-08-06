@@ -36,8 +36,10 @@
   ```
 
 #### 5. Install rpgQTL
+* `which python`. Make sure we are using the python under rpgQTL environment folder.
+* Install rpgQTL:
 ```
 git clone https://github.com/GenEvoBioinfLab/rpgQTL
 cd rpgQTL
-pip install -r install/requirements.txt
+python3 setup.py install
 ```
