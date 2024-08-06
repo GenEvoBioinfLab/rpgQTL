@@ -1,7 +1,0 @@
-numpy
-pandas
-rpy2
-pandas-plink
-xarray
-pyarrow
-tensorqtl
