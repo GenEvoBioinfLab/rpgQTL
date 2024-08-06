@@ -4,22 +4,8 @@ Regions per gene (rpg) QTL
 This is a package based on [TensorQTL](https://github.com/broadinstitute/tensorqtl) with modifications (cis-eQTL module only).  
 Instead of a single parameter of the cis-window size, rpgQTL allows user to specify regions (could be discontinuous) for each gene. Only SNPs in the corresponding regions will be used for corresponding gene cis-eQTL calling.
 
-### Install
-Install directly from this repository:
-```
-$ git clone https://github.com/gersteinlab/rpgQTL.git
-$ cd rpgQTL
-$ pip install -r install/requirements.txt .
-```
-A detailed tutorial of setting up the environment from scratch could be found [here](https://github.com/GenEvoBioinfLab/rpgQTL/blob/main/install/README.md).
-
-### Requirement
-```
-numpy
-pandas
-tensorqtl
-```
-Notice that tensorqtl depends on pandas-plink, pytorch and other packages. For furthur details, see the installing instruction in [tensorqtl](https://github.com/broadinstitute/tensorqtl) or [pytorch](https://pytorch.org/get-started/locally/).
+### Installation and dependancy
+See detailed tutorial [here](https://github.com/GenEvoBioinfLab/rpgQTL/blob/main/install/README.md).  
 
 ### Example
 See `example.ipynb` for the example script. The following is based on the example but applied to the general usage of the rpgQTL package.
@@ -35,8 +21,8 @@ If `pandas.DataFrame`, this would be one large dataframe. Each row correspond to
 If `str`, this would be the path to a directory. For each file in the directory, the file name is a gene name and the file contains the regions for only that gene. The format of each file is the same as the above pandas.DataFrame.
 
 ### rpgQTL functions
-`rpgQTL.run_nominal`: similar to `tensorqtl.cis.map_nominal`. Conduct the nominal run to get nominal p-values.
-`rpgQTL.run_permutation`: similar to `tensorqtl.cis.map_cis`. Conduct the permutation run to get beta-adjusted p-values.
+`rpgQTL.run_nominal`: similar to `tensorqtl.cis.map_nominal`. Conduct the nominal run to get nominal p-values.  
+`rpgQTL.run_permutation`: similar to `tensorqtl.cis.map_cis`. Conduct the permutation run to get beta-adjusted p-values.  
 `rpgQTL.run_independent`: similar to `tensorqtl.cis.map_independent`. Conduct the forward-backward run to get independent eQTLs.
 
 ### rpgQTL Parameters
