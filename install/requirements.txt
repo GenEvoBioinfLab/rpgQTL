@@ -1,3 +1,7 @@
 numpy
 pandas
-tensorqtl
+rpy2
+pandas-plink
+xarray
+pyarrow
+tensorqtl == 1.0.5
