@@ -37,7 +37,7 @@
 
 #### 5. Install rpgQTL
 ```
-git clone git@github.com:GenEvoBioinfLab/rpgQTL.git
+git clone https://github.com/GenEvoBioinfLab/rpgQTL
 cd rpgQTL
 pip install -r install/requirements.txt
 ```
