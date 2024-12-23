@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as stats
 from collections import OrderedDict
-import tensorqtl, core, cis, post, genotypeio
+from tensorqtl import tensorqtl, core, cis, post, genotypeio
 
 output_dtype_dict = {
         'num_var':np.int32,
