@@ -13,7 +13,7 @@ def main():
     parser.add_argument("genotype_file", help="Input genotype .txt.gz file.")
     parser.add_argument("variant_file", help="Input variant .txt.gz file.")
     parser.add_argument("rpg_file", help="Input RPG .bed file.")
-    parser.add_argument("gene_set_file", help="Input gene set file.")
+    parser.add_argument("gene_set_file", default=None, help="Input gene set file.")
     parser.add_argument("output_dir", help="Output folder")
     parser.add_argument("l_window", type=int, default=2000000, help="Boundary for cis-region.")
     parser.add_argument("s_window", type=int, default=0, help="Cis-region where any SNPs within this range are always used.")
