@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as stats
 from collections import OrderedDict
-from tensorqtl import genotypeio, cis, core
+import tensorqtl, core, cis, post, genotypeio
 
 output_dtype_dict = {
         'num_var':np.int32,
@@ -84,7 +84,7 @@ class rpg_igc(object):
                 raise Exception('not valid rpg_df')
 
             if phenotype_id in rpg_phenotypes:
-                # for genes have hi-c interaction
+                # for genes have input candidate regions
                 
                 if isinstance(rpg_df, pd.DataFrame):
                     phenotype_rpg_coor = rpg_df[rpg_df[3] == phenotype_id].iloc[:,[1,2]].values
@@ -96,18 +96,20 @@ class rpg_igc(object):
                     cond = candidate_pos.between(rpg_coor[0], rpg_coor[1])
                     bool_rpg = bool_rpg|cond # add True
 
-                # use everything in swindow (TSS+-nbp, 'promoter')
-                # use everything in RPG (all cis-regions, 'enhancer')
-                # should be within lwindow, remove snp beyond this max boundary ('trans-eQTL' boundary)
+                # use everything in swindow (TSS+-nbp, strict promoter)
+                # use everything in RPG (all input candidate regions, e.g. enhancer or 'wide' promoter)
+                # should be within lwindow, remove snp beyond this max boundary (cis vs trans-eQTL boundary)
                 r = candidate_index[(bool_swindow|bool_rpg)&bool_lwindow].values
 
             else:
-                # for genes with no hi-c
-                
+                # for genes with no input               
+                # use swindow only
                 if NonHiCType == 's_window':
                     r = candidate_index[bool_swindow].values
+                # use lwindow only
                 elif NonHiCType == 'l_window':
                     r = candidate_index[bool_lwindow].values
+                # remove such gene
                 elif NonHiCType == 'remove':
                     r = np.array([])
 
@@ -125,10 +127,6 @@ class rpg_igc(object):
 
     @background(max_prefetch=6)
     def generate_data(self, chrom=None, verbose=False):
-        """
-        Generate batches from genotype data
-        Returns: phenotype array, genotype matrix, genotype index, phenotype ID(s)
-        """
         chr_offset = 0
         if chrom is None:
             phenotype_ids = self.phenotype_df.index
@@ -176,7 +174,6 @@ def run_nominal(genotype_df, variant_df, phenotype_df, phenotype_pos_df, covaria
 
     igc = rpg_igc(genotype_df, variant_df, phenotype_df, phenotype_pos_df,
                                 rpg_df, l_window, s_window, NonHiCType)
-    # iterate over chromosomes
     best_assoc = []
     start_time = time.time()
     k = 0
@@ -184,7 +181,6 @@ def run_nominal(genotype_df, variant_df, phenotype_df, phenotype_pos_df, covaria
     
     for chrom in igc.chrs:
         logger.write('    Mapping chromosome {}'.format(chrom))
-        # allocate arrays
         n = 0
         for i in igc.phenotype_pos_df[igc.phenotype_pos_df['chr']==chrom].index:
             j = igc.cis_ranges[i]
@@ -204,12 +200,10 @@ def run_nominal(genotype_df, variant_df, phenotype_df, phenotype_pos_df, covaria
         start = 0
         for k, (phenotype, genotypes, genotype_range, phenotype_id) in enumerate(igc.generate_data(chrom=chrom, verbose=verbose), k+1):
 
-            # if no valid data, break this igc.generate_data loop
             if phenotype is None:
                 logger.write('Skipping chromosome {} with no valid phenotype'.format(chrom))
                 break
-                
-            # copy genotypes to GPU
+
             phenotype_t = torch.tensor(phenotype, dtype=torch.float).to(device)
             genotypes_t = torch.tensor(genotypes, dtype=torch.float).to(device)
             genotypes_t = genotypes_t[:,genotype_ix_t]
@@ -232,7 +226,7 @@ def run_nominal(genotype_df, variant_df, phenotype_df, phenotype_pos_df, covaria
                 chr_res['pval_nominal'][start:start+n] = tstat
                 chr_res['slope'][start:start+n] = slope
                 chr_res['slope_se'][start:start+n] = slope_se
-            start += n  # update pointer
+            start += n
         
         # if no valid data, skip to next chromosome
         if phenotype is None:
@@ -240,7 +234,6 @@ def run_nominal(genotype_df, variant_df, phenotype_df, phenotype_pos_df, covaria
 
         logger.write('    time elapsed: {:.2f} min'.format((time.time()-start_time)/60))
 
-        # convert to dataframe, compute p-values and write current chromosome
         if start < len(chr_res['maf']):
             for x in chr_res:
                 chr_res[x] = chr_res[x][:start]
@@ -276,7 +269,6 @@ def run_permutation(genotype_df, variant_df, phenotype_df, phenotype_pos_df, cov
     genotype_ix = np.array([genotype_df.columns.tolist().index(i) for i in phenotype_df.columns])
     genotype_ix_t = torch.from_numpy(genotype_ix).to(device)
 
-    # permutation indices
     n_samples = phenotype_df.shape[1]
     ix = np.arange(n_samples)
     if seed is not None:
@@ -293,9 +285,6 @@ def run_permutation(genotype_df, variant_df, phenotype_df, phenotype_pos_df, cov
     logger.write('  * computing permutations')
 
     for k, (phenotype, genotypes, genotype_range, phenotype_id) in enumerate(igc.generate_data(verbose=verbose), 1):
-        # copy genotypes to GPU
-        
-        # if no valid data, skip to next batch
         if phenotype is None:
             continue
             
