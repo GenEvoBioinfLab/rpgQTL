@@ -43,9 +43,9 @@ Different ways to handle genes that have genotype and expression data, but no ca
   - 'gene_set': Using the given gene set as eGenes. Call independent eQTLs on this gene set, regardless of FDR.
 
 ### Using rpgQTL as package
-`rpgQTL.run_nominal`: similar to `tensorqtl.cis.map_nominal`. Conduct the nominal run to get nominal p-values.  
-`rpgQTL.run_permutation`: similar to `tensorqtl.cis.map_cis`. Conduct the permutation run to get beta-adjusted p-values.  
-`rpgQTL.run_independent`: similar to `tensorqtl.cis.map_independent`. Conduct the forward-backward run to get independent eQTLs.  
+- `rpgQTL.run_nominal`: similar to `tensorqtl.cis.map_nominal`. Conduct the nominal run to get nominal p-values.  
+- `rpgQTL.run_permutation`: similar to `tensorqtl.cis.map_cis`. Conduct the permutation run to get beta-adjusted p-values.  
+- `rpgQTL.run_independent`: similar to `tensorqtl.cis.map_independent`. Conduct the forward-backward run to get independent eQTLs.  
 Other parameters in rpgQTL functions are the same as those in the corresponding functions from `tensorqtl`. Notice the rpgQTL only support for the basic cis-eQTL calculations, and thus some tensorQTL parameters are not supported (e.g. all parameters related to "interaction" from tensorqtl.cis.map_nominal are not supported in rpgQTL.run_nominal).
   
 See `example.ipynb` for the example script.
