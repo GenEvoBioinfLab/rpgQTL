@@ -46,14 +46,14 @@ Different ways to handle genes that have genotype and expression data, but no ca
   - 'remove': The genes will be completely removed from calculation.  
   - 'l_window': All SNPs within the cis-window defined by 'l_window' will be used for such genes.  
   - 's_window': All SNPs within the cis-window defined by 's_window' will be used for such genes.  
-10. `EType` (one of ['default', 'eGeneFromPermutation_independentEWindow', 'eGeneFromGeneSet_independentEWindow'], default 'default'):
-  - 'default': Based on the permutation results and q-values with the given parameters, call independent eQTLs as done in regular TensorQTL pipeline.
-  - 'eGeneFromPermutation_independentEWindow': Based on the permutation results and q-values with the given parameters, we identify eGenes. Secondly, we limit the full gene set to only this eGenes set and do a second run of the full eQTL detection pipeline with s_window=e_window (1Mb by default). Therefore, independent eQTLs are called within e_window, based on the leading SNPs in the e_window, for only defined eGenes.
-  - 'eGeneFromGeneSet_independentEWindow': Using the given genes in the gene_set_file as eGenes. Secondly, we limit the full gene set to only this eGenes set and do a second run of the full eQTL detection pipeline with s_window=e_window (1Mb by default). Therefore, independent eQTLs are called within e_window, based on the leading SNPs in the e_window, for only defined eGenes.
+10. `EType` (one of [`'default'`, `'eGeneFromPermutation_independentEWindow'`, `'eGeneFromGeneSet_independentEWindow'`], default `'default'`):
+  - `'default'`: Based on the permutation results and q-values with the given parameters, call independent eQTLs as done in regular TensorQTL pipeline.
+  - `'eGeneFromPermutation_independentEWindow'`: Based on the permutation results and q-values with the given parameters, we identify eGenes. Secondly, we limit the full gene set to only this eGenes set and do a second run of the full eQTL detection pipeline with s_window=e_window (1Mb by default). Therefore, independent eQTLs are called within e_window, based on the leading SNPs in the e_window, for only defined eGenes.
+  - `'eGeneFromGeneSet_independentEWindow'`: Using the given genes in the gene_set_file as eGenes. Secondly, we limit the full gene set to only this eGenes set and do a second run of the full eQTL detection pipeline with s_window=e_window (1Mb by default). Therefore, independent eQTLs are called within e_window, based on the leading SNPs in the e_window, for only defined eGenes.
 11. `gene_set_file`:
-If given and if EType == "eGeneFromGeneSet_independentEWindow", only genes in this file will be used to calculate eQTLs. Each row should be one gene name. Default: None.
+If given and if EType == `"eGeneFromGeneSet_independentEWindow"`, only genes in this file will be used to calculate eQTLs. Each row should be one gene name. Default: None.
 12. `e_window` (int; default 1,000,000):
-The new cis-window to used if EType == "eGeneFromPermutation_independentEWindow" or "eGeneFromGeneSet_independentEWindow".
+The new cis-window to used if EType == `"eGeneFromPermutation_independentEWindow"` or `"eGeneFromGeneSet_independentEWindow"`.
 
 ### Using rpgQTL as package
 - `rpgQTL.run_nominal`: similar to `tensorqtl.cis.map_nominal`. Conduct the nominal run to get nominal p-values.  
