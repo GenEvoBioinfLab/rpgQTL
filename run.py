@@ -8,18 +8,19 @@ def main():
 
     ## parameters
     parser = argparse.ArgumentParser(description="Parameters of rpgQTL")
-    parser.add_argument("expression_file", help="Input expression .bed.gz file.")
-    parser.add_argument("covariates_file", help="Input covariates .txt file.")
-    parser.add_argument("genotype_file", help="Input genotype .txt.gz file.")
-    parser.add_argument("variant_file", help="Input variant .txt.gz file.")
-    parser.add_argument("rpg_file", help="Input RPG .bed file.")
-    parser.add_argument("gene_set_file", default=None, help="Input gene set file.")
-    parser.add_argument("output_dir", help="Output folder")
-    parser.add_argument("l_window", type=int, default=2000000, help="Boundary for cis-region.")
-    parser.add_argument("s_window", type=int, default=0, help="Cis-region where any SNPs within this range are always used.")
-    parser.add_argument("RType", choices=["remove", "l_window", "s_window"], default='remove', help="How to deal with SNPs not in the given RPG file.")
-    parser.add_argument("Etype", choices=["default", "1M", "gene_set"], default='default', help="How to calculate independent eQTL.")
-    parser.add_argument("seed", type=int, default=123456, help="Random seed")
+    parser.add_argument("--expression_file", required=True, help="Input expression .bed.gz file.")
+    parser.add_argument("--covariates_file", required=True, help="Input covariates .txt file.")
+    parser.add_argument("--genotype_file", required=True, help="Input genotype .txt.gz file.")
+    parser.add_argument("--variant_file", required=True, help="Input variant .txt.gz file.")
+    parser.add_argument("--rpg_file", required=True, help="Input RPG .bed file.")
+    parser.add_argument("--output_dir", required=True, help="Output folder")
+    parser.add_argument("--l_window", type=int, default=2000000, help="Boundary for cis-region.")
+    parser.add_argument("--s_window", type=int, default=0, help="Cis-region where any SNPs within this range are always used.")
+    parser.add_argument("--RType", choices=["remove", "l_window", "s_window"], default='remove', help="How to deal with SNPs not in the given RPG file.")
+    parser.add_argument("--Etype", choices=["default", "eGeneFromPermutation_independentEWindow", "eGeneFromGeneSet_independentEWindow"], default='default', help="How to calculate independent eQTL.")
+    parser.add_argument("--gene_set_file", default=None, help="Input gene set file.")
+    parser.add_argument("--e_window", type=int, default=1000000, help="Window size for eGeneFromPermutation_independentEWindow and eGeneFromGeneSet_independentEWindow mode.")
+    parser.add_argument("--seed", type=int, default=123456, help="Random seed")
     args = parser.parse_args()
 
     ## output folder and file name
@@ -58,39 +59,40 @@ def main():
             rpg_df, l_window=args.l_window, s_window=args.s_window, RType=args.RType, seed=args.seed)
         indep_df.to_csv("%s/%s.indep.tsv" % (args.output_dir, prefix), index=False)
 
-    elif args.Etype == "1M":
+    elif args.Etype == "eGeneFromPermutation_independentEWindow":
         ## Define eGenes as those in the current s_window Mb runs,
         ## then use the results from 1Mb runs, keep those 'eGenes' only,
         ## call independent eQTLs from these 'eGenes' using 1Mb result
         egenes_df1 = pd.read_csv("%s/%s.egenes.tsv" % (args.output_dir, prefix), index_col=0)
 
-        if os.path.exists("%s/RPG.1000000.egenes.tsv" % (args.output_dir)):  
+        if os.path.exists("%s/RPG.%s.egenes.tsv" % (args.output_dir, args.e_window)):  
             print("Etype set to 1M. eGenes result from 1M found. Loading...")
-            egenes_df2 = pd.read_csv("%s/RPG.1000000.egenes.tsv" % (args.output_dir), index_col=0)
+            egenes_df2 = pd.read_csv("%s/RPG.%s.egenes.tsv" % (args.output_dir, args.e_window), index_col=0)
         else:
             print("Etype set to 1M. Calculating the eGenes from 1M")
             rpgQTL.run_nominal(genotype_df, variant_df, phenotype_df, phenotype_pos_df, covariates_df,
-                rpg_df, l_window=args.l_window, s_window=1000000, RType=args.RType,
-                output_dir=args.output_dir, prefix="RPG.1000000.")
+                rpg_df, l_window=args.l_window, s_window=args.e_window, RType=args.RType,
+                output_dir=args.output_dir, prefix="RPG.%s." % args.e_window)
             egenes_df2 = rpgQTL.run_permutation(genotype_df, variant_df, phenotype_df, phenotype_pos_df, covariates_df, 
-                rpg_df, l_window=args.l_window, s_window=1000000, RType=args.RType, seed=args.seed)
+                rpg_df, l_window=args.l_window, s_window=args.e_window, RType=args.RType, seed=args.seed)
             post.calculate_qvalues(egenes_df2, fdr=0.05, qvalue_lambda=0.85)
-            egenes_df2.to_csv("%s/RPG.1000000.egenes.tsv" % (args.output_dir), index=True)
-            egenes_df2 = pd.read_csv("%s/RPG.1000000.egenes.tsv" % (args.output_dir), index_col=0)       
+            egenes_df2.to_csv("%s/RPG.%s.egenes.tsv" % (args.output_dir, args.e_window), index=True)
+            egenes_df2 = pd.read_csv("%s/RPG.%s.egenes.tsv" % (args.output_dir, args.e_window), index_col=0)       
 
         egenes_df = egenes_df2[egenes_df2.index.isin(egenes_df1[egenes_df1['qval'] < 0.05].index)].copy()
 
         ## fdr=1 to include all genes after filtering
         indep_df = rpgQTL.map_independent(genotype_df, variant_df, egenes_df, phenotype_df, phenotype_pos_df, covariates_df,
-            rpg_df, l_window=args.l_window, s_window=1000000, seed=args.seed, fdr=1)
-        indep_df.to_csv("%s/%s.indep1M.tsv" % (args.output_dir, prefix), index=False)
+            rpg_df, l_window=args.l_window, s_window=args.e_window, seed=args.seed, fdr=1)
+        indep_df.to_csv("%s/%s.eGeneFromPermutation_independentEWindow%s.tsv" % (args.output_dir, prefix, args.e_window), index=False)
 
-    elif args.Etype == "gene_set":
+    elif args.Etype == "eGeneFromGeneSet_independentEWindow":
         ## Use the given gene list to call indep eqtl, regardless of FDR
         eGene_list = pd.read_csv(args.gene_set_file, header=None)[0].values
         indep_df = rpgQTL.map_independent(genotype_df, variant_df, egenes_df, phenotype_df, phenotype_pos_df, covariates_df,
             rpg_df, l_window=args.l_window, s_window=args.s_window, RType=args.RType, seed=args.seed, eGene_list=eGene_list)
-        indep_df.to_csv("%s/%s.indepGeneSet.tsv" % (args.output_dir, prefix), index=False)
+        indep_df.to_csv("%s/%s.eGeneFromGeneSet_independentEWindow%s.tsv" % (args.output_dir, prefix, args.e_window), index=False)
+
 
 if __name__ == "__main__":
     main()
